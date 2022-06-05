@@ -1,0 +1,38 @@
+- source-queue: ocr_queue #原始队列名
+  queue-config: #原始队列的ip:port 以及认证信息（中台kafka需要认证信息），如果没有认证要求比如sqs队列可以不用配置queue-auth这一项
+    queue-server: 192.168.47.32:9092
+    queue-auth: test,test
+    queue-type: kafka  # 原始队列类型（要么是kafka要么是sqs）
+    consumer-group: xxx #消费组只有kafka队列需要 对于sqs可以不用配置consumer-group标签
+  category-rule: #分类规则
+    - level: 1 #队列等级 level值越大等级越高
+      category-class: com.myhexin.service.Ocrlevel1categoryserviceimpl
+      target-queue: ocr_level1
+      queue-config: #如果优先级队列和原始队列不在同一机器集群中，需要单独加上自己的queue-config,如果优先级队列和原始队列在同一机器集群中 可以不用单独配置自己的queue-config（比如下面的两个优先级队列以及sqs队列)
+        queue-server: 192.168.87.32:9092
+        queue-auth: tesest
+        queue-type: kafka  # 优先级队列类型（kafka|sqs)，原则上请保证原始队列类型一致,因为原始队列和优先级队列一般都会是同类型
+        consumer-group: yyy #消费组只有kafka队列需要 对于sqs可以不用配置consumer-group标签
+    - level: 2
+      category-class: com.myhexin.service.Ocrlevel2categoryserviceimpl
+      target-queue: ocr_level2
+    - level: 3
+      category-class: com.myhexin.service.Ocrlevel3categoryserviceimpl
+      target-queue: ocr_level3
+- source-queue: hk_queue
+  queue-config:
+    queue-server: 10.0.32.25:8852
+    queue-type: sqs # 原始队列类型（要么是kafka要么是sqs）
+  category-rule:
+    - level: 2
+      category-class: com.myhexin.service.Hklevel1categoryserviceimpl
+      target-queue: ocr_level1
+      #优先级队列和原始队列在统一机器集群中可以使用原始队列的queue-config,因此此处省去配置queue-config
+    - level: 1
+      category-class: com.myhexin.service.Hklevel2categoryserviceimpl
+      target-queue: ocr_level2
+      #优先级队列和原始队列在统一机器集群中可以使用原始队列的queue-config,因此此处省去配置queue-config
+
+
+      ##上述配置案例是目前最全的配置标签 不可擅自添加。但是可以减少某些配置 比如queue-config的某些配置
+
